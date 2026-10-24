@@ -1,3 +1,13 @@
+/*
+ * 
+ *
+ * Template file.
+ * You will need to add more code here to execute the command table.
+ *
+ * NOTE: You are responsible for fixing any bugs this code may have!
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,7 +32,7 @@ static int logFile;
 
 static void writeLog(pid_t pid)
 {
-    dprintf(logFile, "Child process %d terminated\n", pid);
+    dprintf(logFile, "child process %d terminated\n", pid);
 }
 
 static void childDone(int)
@@ -111,7 +121,7 @@ void parse(std::vector<Token> &tokens)
         {
             if (tokens[i + 1].type != TOKEN_EOF)
             {
-                abortParse(currentSimpleCommand, "'&' must be the last token of the command");
+                abortParse(currentSimpleCommand, "'&' must be last tken of the command");
                 return;
             }
             currentCommand._background = 1;
