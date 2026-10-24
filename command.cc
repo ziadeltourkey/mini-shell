@@ -32,15 +32,13 @@ static int logFile;
 
 static void writeLog(pid_t pid)
 {
-    dprintf(logFile, "child process %d terminated\n", pid);
-}
+    dprintf(logFile, "child process %d terminated\n", pid); }
 
 static void childDone(int)
 {
     pid_t pid;
     while ((pid = waitpid(-1, NULL, WNOHANG)) > 0)
-        writeLog(pid);
-}
+        writeLog(pid); }
 
 static void redirectTo(const char *file, int flags, int target)
 {
@@ -48,18 +46,15 @@ static void redirectTo(const char *file, int flags, int target)
     if (fd < 0)
     {
         perror(file);
-        _exit(1);
-    }
+        _exit(1); }
     dup2(fd, target);
-    close(fd);
-}
+    close(fd); }
 
 static void abortParse(SimpleCommand *simple, const char *message)
 {
     Command::_currentCommand.insertSimpleCommand(simple);
     Command::_currentCommand.clear();
-    fprintf(stderr, "myshell: %s\n", message);
-}
+    fprintf(stderr, "myshell: %s\n", message); }
 
 void parse(std::vector<Token> &tokens)
 {
@@ -88,13 +83,10 @@ void parse(std::vector<Token> &tokens)
                     if (tokens[i + 1].type == TOKEN_EOF)
                     {
                         abortParse(currentSimpleCommand, "unterminated quote");
-                        return;
-                    }
+                        return;  }
                     i++;
-                    word += " " + tokens[i].value;
-                }
-                word.pop_back();
-            }
+                    word += " " + tokens[i].value; }
+                word.pop_back(); }
 
             if (!quoted && word.find_first_of("*?") != std::string::npos)
             {
@@ -102,21 +94,17 @@ void parse(std::vector<Token> &tokens)
                 glob(word.c_str(), GLOB_NOCHECK, NULL, &matches);
                 for (size_t k = 0; k < matches.gl_pathc; k++)
                     currentSimpleCommand->insertArgument(strdup(matches.gl_pathv[k]));
-                globfree(&matches);
-            }
+                globfree(&matches); }
             else
-                currentSimpleCommand->insertArgument(strdup(word.c_str()));
-        }
+                currentSimpleCommand->insertArgument(strdup(word.c_str()));  }
         else if (type == TOKEN_PIPE)
         {
             if (currentSimpleCommand->_numberOfArguments == 0)
             {
                 abortParse(currentSimpleCommand, "missing command before '|'");
-                return;
-            }
+                return; }
             currentCommand.insertSimpleCommand(currentSimpleCommand);
-            currentSimpleCommand = new SimpleCommand();
-        }
+            currentSimpleCommand = new SimpleCommand(); }
         else if (type == TOKEN_BACKGROUND)
         {
             if (tokens[i + 1].type != TOKEN_EOF)
@@ -124,29 +112,25 @@ void parse(std::vector<Token> &tokens)
                 abortParse(currentSimpleCommand, "'&' must be last tken of the command");
                 return;
             }
-            currentCommand._background = 1;
-        }
+            currentCommand._background = 1; }
         else
         {
             if (tokens[i + 1].type != TOKEN_COMMAND && tokens[i + 1].type != TOKEN_ARGUMENT)
             {
                 std::string message = "missing file name after '" + tokens[i].value + "'";
                 abortParse(currentSimpleCommand, message.c_str());
-                return;
-            }
+                return;  }
 
             char *file = strdup(tokens[i + 1].value.c_str());
             if (type == TOKEN_INPUT)
             {
                 free(currentCommand._inputFile);
-                currentCommand._inputFile = file;
-            }
+                currentCommand._inputFile = file;  }
             else if (type == TOKEN_ERROR)
             {
                 free(currentCommand._errFile);
                 currentCommand._errFile = file;
-                currentCommand._out_error = 0;
-            }
+                currentCommand._out_error = 0;  }
             else
             {
                 free(currentCommand._outFile);
@@ -156,24 +140,18 @@ void parse(std::vector<Token> &tokens)
                 {
                     free(currentCommand._errFile);
                     currentCommand._errFile = strdup(file);
-                    currentCommand._out_error = 1;
-                }
-            }
-            i++;
-        }
-    }
+                    currentCommand._out_error = 1;   } }
+            i++; }}
 
     if (currentSimpleCommand->_numberOfArguments == 0)
     {
         abortParse(currentSimpleCommand, currentCommand._numberOfSimpleCommands > 0
                                              ? "missing command after '|'"
                                              : "missing command");
-        return;
-    }
+        return;  }
 
     currentCommand.insertSimpleCommand(currentSimpleCommand);
-    currentCommand.execute();
-}
+    currentCommand.execute();}
 
 SimpleCommand::SimpleCommand()
 {
@@ -298,16 +276,13 @@ void Command::execute()
         if (strcmp(args[0], "exit") == 0)
         {
             printf("Good bye!!\n");
-            exit(0);
-        }
+            exit(0); }
         if (strcmp(args[0], "cd") == 0)
         {
             if (chdir(args[1] ? args[1] : getenv("HOME")) != 0)
                 perror("cd");
             clear();
-            return;
-        }
-    }
+            return; } }
 
     int count = _numberOfSimpleCommands;
     int input = 0;
@@ -328,14 +303,12 @@ void Command::execute()
             if (input != 0)
             {
                 dup2(input, 0);
-                close(input);
-            }
+                close(input);  }
             if (i < count - 1)
             {
                 dup2(fds[1], 1);
                 close(fds[0]);
-                close(fds[1]);
-            }
+                close(fds[1]);  }
             if (i == 0 && _inputFile)
                 redirectTo(_inputFile, O_RDONLY, 0);
             if (i == count - 1)
@@ -344,25 +317,20 @@ void Command::execute()
                 {
                     redirectTo(_outFile, O_WRONLY | O_CREAT | (_append ? O_APPEND : O_TRUNC), 1);
                     if (_out_error)
-                        dup2(1, 2);
-                }
+                        dup2(1, 2);  }
                 if (_errFile && !_out_error)
-                    redirectTo(_errFile, O_WRONLY | O_CREAT | O_TRUNC, 2);
-            }
+                    redirectTo(_errFile, O_WRONLY | O_CREAT | O_TRUNC, 2);  }
 
             execvp(args[0], args);
             fprintf(stderr, "myshell: %s: command not found\n", args[0]);
-            _exit(1);
-        }
+            _exit(1);  }
 
         if (input != 0)
             close(input);
         if (i < count - 1)
         {
             close(fds[1]);
-            input = fds[0];
-        }
-    }
+            input = fds[0]; } }
 
     if (_background)
         printf("[%d]\n", lastPid);
@@ -379,7 +347,7 @@ void Command::prompt()
     {
         printf("myshell>");
         fflush(stdout);
-        if (!std::getline(std::cin, input)) // dah elend of input
+        if (!std::getline(std::cin, input)) // dah elend bta3 el input
             break;
         std::vector<Token> tokens = tokenize(input);
         parse(tokens);
