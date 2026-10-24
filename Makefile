@@ -1,4 +1,4 @@
-myshell: command.o tokenizer.o //da default target
+myshell: command.o tokenizer.o #da default target
 	g++ -Wall -Wextra -g -o myshell command.o tokenizer.o 
 
 command.o: command.cc command.h tokenizer.h //hna b compile elshell logic wn7wlo l obect file
