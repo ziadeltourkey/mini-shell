@@ -27,30 +27,30 @@
 #include "command.h"
 #include "tokenizer.h"
 
-
+// dah elfile descriptor
 static int logFile;
 
-static void writeLog(pid_t pid)
+static void writeLog(pid_t pid) //bt append 1 line lel log file 34an elterminated child
 {
     dprintf(logFile, "child process %d terminated\n", pid); }
 
-static void childDone(int)
+static void childDone(int) // no zombies
 {
     pid_t pid;
-    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0)
+    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) //wnohang di btloop l8yt lma myb2a4 fih finished children mwgodeen
         writeLog(pid); }
 
-static void redirectTo(const char *file, int flags, int target)
+static void redirectTo(const char *file, int flags, int target)  // 1) btft7 elfile  2) bt5leeh y subst m3 elgiven descriptor
 {
     int fd = open(file, flags, 0644);
     if (fd < 0)
     {
-        perror(file);
+        perror(file);  // elfile mbytft74
         _exit(1); }
     dup2(fd, target);
     close(fd); }
 
-static void abortParse(SimpleCommand *simple, const char *message)
+static void abortParse(SimpleCommand *simple, const char *message) //syntax error f bt reset elcomand wttb3 elmssg
 {
     Command::_currentCommand.insertSimpleCommand(simple);
     Command::_currentCommand.clear();
@@ -68,7 +68,7 @@ void parse(std::vector<Token> &tokens)
     {
         TokenType type = tokens[i].type;
 
-        if (type == TOKEN_COMMAND || type == TOKEN_ARGUMENT)
+        if (type == TOKEN_COMMAND || type == TOKEN_ARGUMENT) //name of the program
         {
             std::string word = tokens[i].value;
             bool quoted = false;
@@ -78,7 +78,7 @@ void parse(std::vector<Token> &tokens)
                 char quote = word[0];
                 quoted = true;
                 word.erase(0, 1);
-                while (word.empty() || word.back() != quote)
+                while (word.empty() || word.back() != quote) //hna ana bkeep appending lelnext tkens
                 {
                     if (tokens[i + 1].type == TOKEN_EOF)
                     {
@@ -86,12 +86,12 @@ void parse(std::vector<Token> &tokens)
                         return;  }
                     i++;
                     word += " " + tokens[i].value; }
-                word.pop_back(); }
+                word.pop_back(); } //bt4eel elclosing quote
 
-            if (!quoted && word.find_first_of("*?") != std::string::npos)
+            if (!quoted && word.find_first_of("*?") != std::string::npos) //goz2 elbonus
             {
                 glob_t matches;
-                glob(word.c_str(), GLOB_NOCHECK, NULL, &matches);
+                glob(word.c_str(), GLOB_NOCHECK, NULL, &matches); //lw mfee4 7aga btmatch bt5li elpattern zy hwa
                 for (size_t k = 0; k < matches.gl_pathc; k++)
                     currentSimpleCommand->insertArgument(strdup(matches.gl_pathv[k]));
                 globfree(&matches); }
