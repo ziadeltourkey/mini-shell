@@ -63,7 +63,7 @@ static void abortParse(SimpleCommand *simple, const char *message)
 
 void parse(std::vector<Token> &tokens)
 {
-    if (tokens.size() == 1)
+    if (tokens.size() == 1)  //da line fady (bta3 token eof bs)
         return;
 
     Command &currentCommand = Command::_currentCommand;
@@ -379,7 +379,7 @@ void Command::prompt()
     {
         printf("myshell>");
         fflush(stdout);
-        if (!std::getline(std::cin, input))
+        if (!std::getline(std::cin, input)) // dah elend of input
             break;
         std::vector<Token> tokens = tokenize(input);
         parse(tokens);
